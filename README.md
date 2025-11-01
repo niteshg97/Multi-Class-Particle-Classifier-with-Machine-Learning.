@@ -128,6 +128,11 @@ Random Forest slightly edges out the Neural Network in *overall accuracy* (96.85
 * Feature-importance plots (from `RFC.feature_importances_`) in the notebook strongly indicate that `beta` (velocity) and `p` (momentum) are dominant predictors — consistent with physics, since mass (and hence particle type) is related to momentum and velocity.
 
 ---
+<img width="2390" height="719" alt="Model comparison " src="https://github.com/user-attachments/assets/ae8de1dc-2406-4965-931f-5e7b5202b117" />
+
+
+
+
 
 ## Final Conclusion & Recommendations 🏁
 
