@@ -1,4 +1,10 @@
-# Multi-Class Particle Classifier 
+<img width="1316" height="793" alt="Multi- class particle identification " src="https://github.com/user-attachments/assets/7a64ec76-ff34-4832-b41f-3b2437a64ddc" />
+
+
+
+
+
+# Multi-Class Particle Classifier
 
 **A reproducible notebook project** that builds and compares multiple machine-learning models to classify subatomic particles (Pion, Proton, Kaon, Electron) using detector features such as momentum and velocity.
 
