@@ -1,8 +1,4 @@
-<img width="1316" height="793" alt="Multi- class particle identification " src="https://github.com/user-attachments/assets/7a64ec76-ff34-4832-b41f-3b2437a64ddc" />
-
-
-
-
+<img width="1316" height="793" alt="Multi-Class Particle Identification" src="https://github.com/user-attachments/assets/7a64ec76-ff34-4832-b41f-3b2437a64ddc" />
 
 # Multi-Class Particle Classifier
 
@@ -14,15 +10,14 @@
 
 This project demonstrates end-to-end model development for a physics classification problem using a real dataset (original CSV referenced in the notebook: `/content/drive/My Drive/pid-5M.csv`). The notebook:
 
-Data Set
+Dataset Source:  
+This large dataset is from Kaggle — [Particle Identification from Detector Responses](https://www.kaggle.com/datasets/naharrison/particle-identification-from-detector-responses), a simulation of electron-proton inelastic scattering measured by a particle detector system.
 
-This Large dataset is from Kaggle (https://www.kaggle.com/datasets/naharrison/particle-identification-from-detector-responses) ,a simulation of electron-proton inelastic scattering measured by a particle detector system.
-
-* Loads and samples the data (50,000 rows sampled from the full dataset)
+* Loads and samples the data (50,000 rows from the full dataset)
 * Performs exploratory data analysis (correlations, scatter plots)
-* Trains five classifiers and a neural network
+* Trains five classical ML models and one neural network
 * Evaluates models on a held-out test set (10,000 particles)
-* Analyses per-class performance and highlights the effect of class imbalance
+* Analyzes per-class performance, highlighting class imbalance and rare-particle detection
 
 ---
 
@@ -33,166 +28,130 @@ This Large dataset is from Kaggle (https://www.kaggle.com/datasets/naharrison/pa
 | Model               |  Accuracy  |
 | :------------------ | :--------: |
 | **Random Forest**   | **96.85%** |
-| **Neural Network**  | **96.70%** |
+| **Neural Network**  | **96.65%** |
 | K-Nearest Neighbors |   95.62%   |
 | Decision Tree       |   95.59%   |
 | Logistic Regression |   93.20%   |
 
-> **Winner (by overall accuracy):** Random Forest (n_estimators=200, criterion='entropy') — but see the detailed analysis below. ⚖️
+> **Winner (by overall accuracy):** Random Forest — but this metric is misleading. See the detailed findings below. ⚖️
 
 ---
 
 ## Dataset & Features 🧾
 
-**Source (as referenced in the notebook):** `pid-5M.csv` (mounted from Google Drive in the Colab notebook).
-
+**Source:** `pid-5M.csv`  
 **Sample used:** `data.sample(n=50000, random_state=42)`
 
-**Columns / Features used** (as present in the notebook):
+**Columns / Features used:**
+* `id` — particle id (target): `211`=Pion, `2212`=Proton, `321`=Kaon, `-11`=Electron  
+* `p` — momentum  
+* `theta` — polar angle  
+* `beta` — velocity (fraction of *c*)  
+* `nphe` — number of photoelectrons  
+* `ein`, `eout` — energy deposits
 
-* `id` — particle id (target): `211`=Pion, `2212`=Proton, `321`=Kaon, `-11`=Electron
-* `p` — momentum
-* `theta` — polar angle
-* `beta` — velocity / speed as fraction of c
-* `nphe` — number of photoelectrons
-* `ein`, `eout` — energy deposit measurements
-
-**Label mapping used in the notebook:**
-
-```python
-labels_map = {211: 'Pion (π)', 2212: 'Proton (p)', 321: 'Kaon (K)', -11: 'Electron (e-)'}
-```
-
-**Train/Test split:** 80% train (40,000 samples), 20% test (10,000 samples) via `train_test_split(..., test_size=0.2, random_state=42)`.
-
-**Scaling:** StandardScaler applied to models that benefit from scaling (Logistic Regression, KNN, Neural Network). Tree-based models (Decision Tree, Random Forest) trained on raw features.
+**Train/Test split:** 80% train (40,000 samples) / 20% test (10,000 samples).  
+**Scaling:** Applied to models sensitive to feature scale (LR, KNN, NN).  
 
 ---
 
 ## Models & Key Hyperparameters 🧩
 
-All models were trained on the same 80/20 split for fair comparison.
+All models were trained on the same data split for consistency.
 
-* **Random Forest (Multi-Class)**
+* **Random Forest**  
+  `RandomForestClassifier(n_estimators=200, criterion='entropy', random_state=0)`  
 
-  * `RandomForestClassifier(n_estimators=200, criterion='entropy', random_state=0)`
-  * Trained on unscaled features.
+* **Neural Network (Keras/TensorFlow)**  
+  Architecture:  
+  `Dense(64, relu) → Dropout(0.3) → Dense(32, relu) → Dropout(0.3) → Dense(4, softmax)`  
+  Loss: `categorical_crossentropy`  
+  Optimizer: `adam`  
+  Training: `epochs=30`, `batch_size=64`, `validation_split=0.2`  
 
-* **Neural Network (Keras / TensorFlow)**
-
-  * Architecture: `Dense(64, relu) -> Dropout(0.3) -> Dense(32, relu) -> Dropout(0.3) -> Dense(4, softmax)`
-  * Loss: `categorical_crossentropy` — Optimizer: `adam`
-  * Training: `epochs=30`, `batch_size=64`, `validation_split=0.2`
-  * Labels one-hot encoded for training.
-
-* **K-Nearest Neighbors**
-
-  * `KNeighborsClassifier(n_neighbors=4)` — trained on scaled features.
-
-* **Decision Tree**
-
-  * `DecisionTreeClassifier(criterion='entropy', random_state=0)`
-
-* **Logistic Regression**
-
-  * `LogisticRegression(multi_class='ovr', solver='liblinear', random_state=42)` — trained on scaled features.
+* **KNN** — `KNeighborsClassifier(n_neighbors=4)`  
+* **Decision Tree** — `DecisionTreeClassifier(criterion='entropy', random_state=0)`  
+* **Logistic Regression** — `LogisticRegression(multi_class='ovr', solver='liblinear', random_state=42)`
 
 ---
 
 ## Important Findings — Detailed 🔎
 
-> These are the **most critical** takeaways from the evaluation beyond the overall accuracy numbers.
+### 1️⃣ Accuracy-Only Comparison (The “Bake-Off”)
 
-### 1) The Bake-Off — raw accuracy table (see Quick Results Snapshot above)
+Random Forest slightly outperformed the Neural Network on overall accuracy (96.85% vs. 96.65%).  
+However, deeper metrics reveal a critical imbalance-driven flaw.
 
-Random Forest slightly edges out the Neural Network in *overall accuracy* (96.85% vs 96.70%).
+### 2️⃣ The Class Imbalance Problem 🚨
 
-### 2) The Imbalanced Data Problem — the real issue 🚨
+| Particle | Precision | Recall | F1 | Support |
+| :-------- | :--------: | :------: | :------: | :------: |
+| **Electron** | 0.89 | **0.28** | 0.42 | 29 |
+| **Kaon** | 0.75 | **0.72** | 0.73 | 425 |
+| **Pion** | 0.98 | 0.97 | 0.98 | 5669 |
+| **Proton** | 0.98 | 0.99 | 0.98 | 3877 |
 
-**The per-class performance for the Random Forest** (winning model by accuracy) shows a strong imbalance-driven effect. The classification report for the Random Forest on the test set is summarized below (this is the exact report produced in the notebook):
+➡️ The Random Forest achieved high accuracy primarily due to strong performance on **Pions** and **Protons**, which together account for **95% of the dataset**.  
+It struggled with rare particles — **Electrons** (28% recall) and **Kaons** (72% recall).
 
-| Particle     | Precision |  Recall  | F1-Score | Support (test count) |
-| :----------- | :-------: | :------: | :------: | :------------------: |
-| **Electron** |    0.89   | **0.28** |   0.42   |          29          |
-| **Kaon**     |    0.75   | **0.72** |   0.73   |          425         |
-| **Pion**     |    0.98   |   0.97   |   0.98   |         5669         |
-| **Proton**   |    0.98   |   0.99   |   0.98   |         3877         |
+### 3️⃣ Feature Importance (Physics Alignment)
 
-**Interpretation:**
-
-* The model is excellent at identifying **Pions** and **Protons** (the dominant classes), but it fails to recover the rare **Electrons** (only 28% recall) and misses a significant fraction of **Kaons**.
-* This demonstrates the classic *accuracy paradox* where a high overall accuracy masks poor performance on rare but scientifically important classes.
-
-### 3) Feature importance (why the models work) 📈
-
-* Feature-importance plots (from `RFC.feature_importances_`) in the notebook strongly indicate that `beta` (velocity) and `p` (momentum) are dominant predictors — consistent with physics, since mass (and hence particle type) is related to momentum and velocity.
+Feature importances show `beta` (velocity) and `p` (momentum) dominate — aligning with the physics principle that mass differentiates particles with the same momentum.
 
 ---
-<img width="2390" height="719" alt="Model comparison " src="https://github.com/user-attachments/assets/ae8de1dc-2406-4965-931f-5e7b5202b117" />
 
 
+<img width="2390" height="719" alt="Model Comparison " src="https://github.com/user-attachments/assets/599a0dd8-5c1b-4794-932a-07d6accd4ef1" />
 
 
+---
 
-## Final Conclusion & Recommendations 🏁
+## 🏁 Final Conclusion & Key Findings
 
-**Bottom line:** ML can classify these subatomic particles with high overall accuracy (≈96.85%). However, for research goals where finding *rare* particles is the objective, raw accuracy is **not** the right metric.
+This project successfully demonstrated the application of multiple machine learning models for multi-class particle identification.
 
-**Key conclusion:**
+### Key Finding 1: Overall Accuracy is High, but Misleading
 
-* The Random Forest produces the best overall accuracy by focusing on majority classes. The Neural Network (96.70% accuracy) is likely more suited to discovery because it appears to be comparatively better at identifying the rarer classes (Electrons and Kaons) — and with hyperparameter tuning it may surpass the Random Forest on both overall and per-class metrics.
+While the **Random Forest** appears to be the best model by accuracy, this metric hides the model’s failure on rare classes (Electrons and Kaons).
 
-**Recommendations for future work:**
+### Key Finding 2: The Neural Network Excels in Rare Particle Detection
 
-1. **Feature engineering** — compute a physics-inspired mass proxy (e.g., functions of `p` and `beta`) and add it as a feature. This could make class separation much easier.
-2. **Handle class imbalance** — use oversampling (e.g., SMOTE), class-weighted loss functions (for the NN), or focal loss to give rare classes more influence during training.
-3. **Model tuning & ensembling** — perform hyperparameter search for the Neural Network and Random Forest; consider ensembling models to boost rare-class recall.
-4. **Evaluation metrics** — prioritize per-class recall / F1 for rare classes, use macro-averaged metrics, and track confusion matrices and ROC/PR curves per class.
+| Particle (Support) | Random Forest (Recall) | Neural Network (Recall) | Winner |
+| :--- | :--- | :--- | :--- |
+| **Electron** (29) | 0.28 | **0.38** | 🧠 **Neural Network** |
+| **Kaon** (425) | 0.72 | **0.77** | 🧠 **Neural Network** |
+| **Pion** (5669) | 0.97 | 0.97 | ⚖️ Tie |
+| **Proton** (3877) | 0.99 | 0.99 | ⚖️ Tie |
+
+✅ The Neural Network, despite slightly lower overall accuracy, delivers **superior recall** for rare particles — making it more scientifically valuable.
+
+---
+
+### 🔧 Final Recommendation
+
+While **Random Forest** wins on paper, the **Neural Network** is **the more promising model** for this physics problem.  
+Future research should focus on improving **Recall** for rare classes, not overall accuracy.
+
+**Recommended next steps:**
+
+1. **Feature Engineering** — create physics-inspired features (e.g., mass proxy from `p` and `β`).  
+2. **Data Resampling** — apply **SMOTE** or other resampling methods to balance class representation.  
+3. **Weighted Loss Optimization** — penalize misclassification of rare classes using class weights or focal loss in the NN.
 
 ---
 
 ## How to Reproduce ✅
 
-Clone or open the Jupyter notebook: `Multi_Class_Particle_Classifier_with_Machine_Learning.ipynb` and ensure the dataset `pid-5M.csv` is available.
+Clone or open the Jupyter notebook:  
+`Multi_Class_Particle_Classifier_with_Machine_Learning.ipynb`  
+Ensure `pid-5M.csv` is accessible.
 
-### Dependencies (tested):
+### Dependencies
 
 ```bash
 pip install pandas numpy matplotlib seaborn scikit-learn tensorflow
-```
 
-### Run in Google Colab (recommended):
 
-1. Upload `pid-5M.csv` to your Google Drive.
-2. Open the notebook in Colab (it already contains `drive.mount('/content/drive')` and expects `file_path = '/content/drive/My Drive/pid-5M.csv'`).
-3. Execute cells sequentially. The notebook will sample 50k rows and produce plots, training logs, and final evaluation tables.
-
-### Quick commands (local):
-
-* Run the notebook with `jupyter lab` or `jupyter notebook`.
-* If running locally and memory is constrained, change `data.sample(n=50000, ...)` to a smaller sample.
-
----
-
-## File Structure (as expected)
-
-```
-Multi_Class_Particle_Classifier_with_Machine_Learning.ipynb
-pid-5M.csv
-README.md   
-```
-
----
-
-## Notes & Caveats ⚠️
-
-* The notebook uses `data.sample(n=50000, random_state=42)` so results will be reproducible with the same random seed but could vary if different sampling is used.
-* Some code cells use trees without scaling (correct approach), and models sensitive to scale use `StandardScaler` prior to fitting.
-* The notebook trains the NN for 30 epochs — results may improve with more epochs, learning-rate scheduling, and architecture search.
-
----
-
-## Contact / Credits ✉️
-
-Project author: Nitesh Kumar ( https://github.com/niteshg97 )
+## Contact / Credits
+ ✉️ Project author: Nitesh Kumar ( https://github.com/niteshg97 )
 
