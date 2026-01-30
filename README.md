@@ -6,7 +6,7 @@
 
 ---
 
-## Overview 🧭
+## Overview 
 
 This project demonstrates end-to-end model development for a physics classification problem using a real dataset (original CSV referenced in the notebook: `/content/drive/My Drive/pid-5M.csv`). The notebook:
 
@@ -21,7 +21,7 @@ This large dataset is from Kaggle — [Particle Identification from Detector Res
 
 ---
 
-## Quick Results Snapshot 🏆
+##  Results  
 
 **Final Test Accuracy (10,000-particle test set):**
 
@@ -33,11 +33,11 @@ This large dataset is from Kaggle — [Particle Identification from Detector Res
 | Decision Tree       |   95.59%   |
 | Logistic Regression |   93.20%   |
 
-> **Winner (by overall accuracy):** Random Forest — but this metric is misleading. See the detailed findings below. ⚖️
+> **Winner (by overall accuracy):** Random Forest — but this metric is misleading. See the detailed findings below. 
 
 ---
 
-## Dataset & Features 🧾
+## Dataset & Features 
 
 **Source:** `pid-5M.csv`  
 **Sample used:** `data.sample(n=50000, random_state=42)`
@@ -55,7 +55,7 @@ This large dataset is from Kaggle — [Particle Identification from Detector Res
 
 ---
 
-## Models & Key Hyperparameters 🧩
+## Models & Key Hyperparameters 
 
 All models were trained on the same data split for consistency.
 
@@ -75,14 +75,14 @@ All models were trained on the same data split for consistency.
 
 ---
 
-## Important Findings — Detailed 🔎
+## Important Findings , Detailed 
 
-### 1️⃣ Accuracy-Only Comparison (The “Bake-Off”)
+### Accuracy Comparison 
 
 Random Forest slightly outperformed the Neural Network on overall accuracy (96.85% vs. 96.65%).  
 However, deeper metrics reveal a critical imbalance-driven flaw.
 
-### 2️⃣ The Class Imbalance Problem 🚨
+### The Class Imbalance Problem 
 
 | Particle | Precision | Recall | F1 | Support |
 | :-------- | :--------: | :------: | :------: | :------: |
@@ -91,10 +91,10 @@ However, deeper metrics reveal a critical imbalance-driven flaw.
 | **Pion** | 0.98 | 0.97 | 0.98 | 5669 |
 | **Proton** | 0.98 | 0.99 | 0.98 | 3877 |
 
-➡️ The Random Forest achieved high accuracy primarily due to strong performance on **Pions** and **Protons**, which together account for **95% of the dataset**.  
+The Random Forest achieved high accuracy primarily due to strong performance on **Pions** and **Protons**, which together account for **95% of the dataset**.  
 It struggled with rare particles — **Electrons** (28% recall) and **Kaons** (72% recall).
 
-### 3️⃣ Feature Importance (Physics Alignment)
+###  Feature Importance (Physics Alignment)
 
 Feature importances show `beta` (velocity) and `p` (momentum) dominate — aligning with the physics principle that mass differentiates particles with the same momentum.
 
@@ -118,16 +118,16 @@ While the **Random Forest** appears to be the best model by accuracy, this metri
 
 | Particle (Support) | Random Forest (Recall) | Neural Network (Recall) | Winner |
 | :--- | :--- | :--- | :--- |
-| **Electron** (29) | 0.28 | **0.38** | 🧠 **Neural Network** |
-| **Kaon** (425) | 0.72 | **0.77** | 🧠 **Neural Network** |
-| **Pion** (5669) | 0.97 | 0.97 | ⚖️ Tie |
-| **Proton** (3877) | 0.99 | 0.99 | ⚖️ Tie |
+| **Electron** (29) | 0.28 | **0.38** |  **Neural Network** |
+| **Kaon** (425) | 0.72 | **0.77** |  **Neural Network** |
+| **Pion** (5669) | 0.97 | 0.97 |  Tie |
+| **Proton** (3877) | 0.99 | 0.99 |  Tie |
 
-✅ The Neural Network, despite slightly lower overall accuracy, delivers **superior recall** for rare particles — making it more scientifically valuable.
+ The Neural Network, despite slightly lower overall accuracy, delivers **superior recall** for rare particles — making it more scientifically valuable.
 
 ---
 
-### 🔧 Final Recommendation
+###  Final Recommendation
 
 While **Random Forest** wins on paper, the **Neural Network** is **the more promising model** for this physics problem.  
 Future research should focus on improving **Recall** for rare classes, not overall accuracy.
@@ -140,7 +140,7 @@ Future research should focus on improving **Recall** for rare classes, not overa
 
 ---
 
-## How to Reproduce ✅
+## How to Reproduce 
 
 Clone or open the Jupyter notebook:  
 `Multi_Class_Particle_Classifier_with_Machine_Learning.ipynb`  
